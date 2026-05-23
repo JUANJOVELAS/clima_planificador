@@ -27,7 +27,7 @@ class _ActividadesPageState extends State<ActividadesPage> {
 
   Future<void> cargarActividades() async {
     final url = Uri.parse(
-      "http://127.0.0.1:5000/actividades/${widget.usuarioId}",
+      "https://clima-planificador.onrender.com/actividades/${widget.usuarioId}",
     );
 
     final respuesta = await http.get(url);
@@ -40,7 +40,7 @@ class _ActividadesPageState extends State<ActividadesPage> {
   }
 
   Future<void> guardarActividad() async {
-    final url = Uri.parse("http://127.0.0.1:5000/actividades");
+    final url = Uri.parse("https://clima-planificador.onrender.com/actividades");
 
     final respuesta = await http.post(
       url,
@@ -68,7 +68,7 @@ class _ActividadesPageState extends State<ActividadesPage> {
 
   Future<void> completarActividad(int actividadId) async {
     final url = Uri.parse(
-      "http://127.0.0.1:5000/actividades/$actividadId/completar",
+      "https://clima-planificador.onrender.com/actividades/$actividadId/completar",
     );
 
     await http.put(url);
@@ -77,7 +77,7 @@ class _ActividadesPageState extends State<ActividadesPage> {
 
   Future<void> eliminarActividad(int actividadId) async {
     final url = Uri.parse(
-      "http://127.0.0.1:5000/actividades/$actividadId",
+      "https://clima-planificador.onrender.com/actividades/$actividadId",
     );
 
     await http.delete(url);
@@ -86,7 +86,7 @@ class _ActividadesPageState extends State<ActividadesPage> {
 
   Future<void> editarActividad() async {
     final url = Uri.parse(
-      "http://127.0.0.1:5000/actividades/$actividadEditando",
+      "https://clima-planificador.onrender.com/actividades/$actividadEditando",
     );
 
     final respuesta = await http.put(

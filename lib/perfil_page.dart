@@ -25,7 +25,7 @@ class _PerfilPageState extends State<PerfilPage> {
   String? fotoBase64;
 
   Future<void> cargarPerfil() async {
-    final url = Uri.parse("http://127.0.0.1:5000/perfil/${widget.usuarioId}");
+    final url = Uri.parse("https://clima-planificador.onrender.com/perfil/${widget.usuarioId}");
 
     final respuesta = await http.get(url);
 
@@ -58,7 +58,7 @@ class _PerfilPageState extends State<PerfilPage> {
   }
 
   Future<void> actualizarPerfil() async {
-    final url = Uri.parse("http://127.0.0.1:5000/perfil/${widget.usuarioId}");
+    final url = Uri.parse("https://clima-planificador.onrender.com/perfil/${widget.usuarioId}");
 
     final respuesta = await http.put(
       url,

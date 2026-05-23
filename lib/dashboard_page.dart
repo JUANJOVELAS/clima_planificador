@@ -27,7 +27,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
   Future<void> cargarEstadisticas() async {
     final url = Uri.parse(
-      "http://127.0.0.1:5000/estadisticas/${widget.usuarioId}",
+      "https://clima-planificador.onrender.com/estadisticas/${widget.usuarioId}",
     );
 
     final respuesta = await http.get(url);
@@ -45,7 +45,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
   Future<void> cargarTemperaturas() async {
     final url = Uri.parse(
-      "http://127.0.0.1:5000/temperaturas/${widget.usuarioId}",
+      "https://clima-planificador.onrender.com/temperaturas/${widget.usuarioId}",
     );
 
     final respuesta = await http.get(url);

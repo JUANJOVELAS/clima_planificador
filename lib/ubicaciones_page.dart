@@ -19,7 +19,7 @@ class _UbicacionesPageState extends State<UbicacionesPage> {
 
   Future<void> cargarUbicaciones() async {
     final url = Uri.parse(
-      "http://127.0.0.1:5000/ubicaciones/${widget.usuarioId}",
+      "https://clima-planificador.onrender.com/ubicaciones/${widget.usuarioId}",
     );
 
     final respuesta = await http.get(url);

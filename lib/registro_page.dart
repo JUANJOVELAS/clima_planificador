@@ -17,7 +17,7 @@ class _RegistroPageState extends State<RegistroPage> {
   String mensaje = "";
 
   Future<void> registrar() async {
-    final url = Uri.parse("http://127.0.0.1:5000/registro");
+    final url = Uri.parse("https://clima-planificador.onrender.com/registro");
 
     final respuesta = await http.post(
       url,

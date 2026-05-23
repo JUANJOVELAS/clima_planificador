@@ -14,7 +14,7 @@ class _RecuperarPasswordPageState extends State<RecuperarPasswordPage> {
   String mensaje = "";
 
   Future<void> recuperar() async {
-    final url = Uri.parse("http://127.0.0.1:5000/recuperar-password");
+    final url = Uri.parse("https://clima-planificador.onrender.com/recuperar-password");
 
     final respuesta = await http.post(
       url,

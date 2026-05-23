@@ -86,7 +86,7 @@ class _LoginPageState extends State<LoginPage> {
   String mensaje = "";
 
   Future<void> login() async {
-    final url = Uri.parse("http://127.0.0.1:5000/login");
+    final url = Uri.parse("https://clima-planificador.onrender.com/login");
 
     final respuesta = await http.post(
       url,
@@ -389,7 +389,7 @@ class _HomePageState extends State<HomePage> {
       return;
     }
 
-    final url = Uri.parse("http://127.0.0.1:5000/ubicaciones");
+    final url = Uri.parse("https://clima-planificador.onrender.com/ubicaciones");
 
     final respuesta = await http.post(
       url,
@@ -417,7 +417,7 @@ class _HomePageState extends State<HomePage> {
 
     double temp = double.parse(temperatura.replaceAll(" °C", ""));
 
-    final url = Uri.parse("http://127.0.0.1:5000/temperaturas");
+    final url = Uri.parse("https://clima-planificador.onrender.com/temperaturas");
 
     await http.post(
       url,

@@ -19,7 +19,7 @@ class _PendientesPageState extends State<PendientesPage> {
 
   Future<void> cargarPendientes() async {
     final url = Uri.parse(
-      "http://127.0.0.1:5000/actividades/${widget.usuarioId}",
+      "https://clima-planificador.onrender.com/actividades/${widget.usuarioId}",
     );
 
     final respuesta = await http.get(url);
