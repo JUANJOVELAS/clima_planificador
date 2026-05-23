@@ -23,9 +23,9 @@ def obtener_conexion():
         port=int(os.getenv("DB_PORT")),
         user=os.getenv("DB_USER"),
         password=os.getenv("DB_PASSWORD"),
-        database=os.getenv("DB_NAME")
+        database=os.getenv("DB_NAME"),
+        ssl_disabled=False
     )
-
 
 def convertir_fechas(objeto):
     for key, value in objeto.items():
