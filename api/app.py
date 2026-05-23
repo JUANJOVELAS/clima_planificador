@@ -10,6 +10,7 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import date, time, timedelta, datetime
+import requests
 
 load_dotenv()
 
@@ -211,38 +212,38 @@ def recuperar_password():
         cursor.close()
         conexion.close()
 
-        remitente = os.getenv("EMAIL_USER")
-        password_email = os.getenv("EMAIL_PASSWORD")
+        api_key = os.getenv("RESEND_API_KEY")
 
-        mensaje = MIMEMultipart()
-        mensaje["From"] = remitente
-        mensaje["To"] = correo
-        mensaje["Subject"] = "Recuperación de contraseña"
+        respuesta_resend = requests.post(
+            "https://api.resend.com/emails",
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "from": "onboarding@resend.dev",
+                "to": correo,
+                "subject": "Recuperación de contraseña",
+                "html": f"""
+                <h2>Recuperación de contraseña</h2>
+                <p>Tu contraseña temporal es:</p>
+                <h1>{password_temporal}</h1>
+                <p>Debes cambiarla al iniciar sesión.</p>
+                """,
+            },
+        )
 
-        cuerpo = f"""
-Hola.
-
-Tu contraseña temporal es:
-
-{password_temporal}
-
-Debes cambiarla al iniciar sesión.
-"""
-
-        mensaje.attach(MIMEText(cuerpo, "plain"))
-
-        servidor = smtplib.SMTP("smtp.gmail.com", 587)
-        servidor.starttls()
-        servidor.login(remitente, password_email)
-        servidor.sendmail(remitente, correo, mensaje.as_string())
-        servidor.quit()
+        if respuesta_resend.status_code not in [200, 201]:
+            return jsonify({
+                "error": "No se pudo enviar el correo",
+                "detalle": respuesta_resend.text
+            }), 500
 
         return jsonify({"mensaje": "Correo enviado correctamente"}), 200
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-
+        
 @app.route("/cambiar-password/<int:usuario_id>", methods=["PUT"])
 def cambiar_password(usuario_id):
     datos = request.get_json()
