@@ -14,7 +14,12 @@ from datetime import date, time, timedelta, datetime
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app)
+
+CORS(
+    app,
+    resources={r"/*": {"origins": "*"}},
+    supports_credentials=False
+)
 
 
 def obtener_conexion():

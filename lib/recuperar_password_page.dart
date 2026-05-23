@@ -12,57 +12,130 @@ class RecuperarPasswordPage extends StatefulWidget {
 class _RecuperarPasswordPageState extends State<RecuperarPasswordPage> {
   final correoController = TextEditingController();
   String mensaje = "";
+  bool cargando = false;
 
   Future<void> recuperar() async {
-    final url = Uri.parse("https://clima-planificador.onrender.com/recuperar-password");
+    setState(() {
+      cargando = true;
+      mensaje = "";
+    });
 
-    final respuesta = await http.post(
-      url,
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode({
-        "correo": correoController.text,
-      }),
+    final url = Uri.parse(
+      "https://clima-planificador.onrender.com/recuperar-password",
     );
 
-    final datos = jsonDecode(respuesta.body);
+    try {
+      final respuesta = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "correo": correoController.text.trim(),
+        }),
+      );
 
-    setState(() {
-      if (respuesta.statusCode == 200) {
-        mensaje =
-            "${datos["mensaje"]}\nContraseña temporal: ${datos["password_temporal"]}";
-      } else {
-        mensaje = datos["error"];
-      }
-    });
+      final datos = jsonDecode(respuesta.body);
+
+      setState(() {
+        if (respuesta.statusCode == 200) {
+          mensaje = datos["mensaje"];
+        } else {
+          mensaje = datos["error"];
+        }
+      });
+    } catch (e) {
+      setState(() {
+        mensaje = "Error de conexión con el servidor";
+      });
+    } finally {
+      setState(() {
+        cargando = false;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final esOscuro = Theme.of(context).brightness == Brightness.dark;
+    final fondo = esOscuro ? const Color(0xFF0F172A) : const Color(0xFFF4F6FB);
+    final card = esOscuro ? const Color(0xFF1E293B) : Colors.white;
+
     return Scaffold(
+      backgroundColor: fondo,
       appBar: AppBar(
         title: const Text("Recuperar contraseña"),
+        centerTitle: true,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            TextField(
-              controller: correoController,
-              decoration: const InputDecoration(
-                labelText: "Correo registrado",
+      body: Center(
+        child: Container(
+          width: 430,
+          margin: const EdgeInsets.all(22),
+          padding: const EdgeInsets.all(26),
+          decoration: BoxDecoration(
+            color: card,
+            borderRadius: BorderRadius.circular(28),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.mark_email_read,
+                size: 70,
+                color: Colors.blue,
               ),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: recuperar,
-              child: const Text("Generar contraseña temporal"),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              mensaje,
-              textAlign: TextAlign.center,
-            ),
-          ],
+              const SizedBox(height: 18),
+              const Text(
+                "Recuperar contraseña",
+                style: TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 10),
+              const Text(
+                "Ingresa tu correo registrado y recibirás una contraseña temporal.",
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              TextField(
+                controller: correoController,
+                decoration: InputDecoration(
+                  labelText: "Correo registrado",
+                  prefixIcon: const Icon(Icons.email),
+                  filled: true,
+                  fillColor: esOscuro ? const Color(0xFF0F172A) : Colors.white,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(18),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 22),
+              SizedBox(
+                width: double.infinity,
+                height: 52,
+                child: ElevatedButton.icon(
+                  onPressed: cargando ? null : recuperar,
+                  icon: cargando
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.send),
+                  label: Text(
+                    cargando ? "Enviando..." : "Enviar contraseña temporal",
+                  ),
+                ),
+              ),
+              if (mensaje.isNotEmpty) ...[
+                const SizedBox(height: 18),
+                Text(
+                  mensaje,
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ],
+          ),
         ),
       ),
     );
