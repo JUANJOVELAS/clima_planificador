@@ -177,8 +177,11 @@ def editar_perfil(usuario_id):
         return jsonify({"error": str(e)}), 500
 
 
-@app.route("/recuperar-password", methods=["POST"])
+@app.route("/recuperar-password", methods=["POST", "OPTIONS"])
 def recuperar_password():
+    if request.method == "OPTIONS":
+        return jsonify({"ok": True}), 200
+
     datos = request.get_json()
     correo = datos.get("correo")
 
