@@ -22,6 +22,11 @@ class _DashboardPageState extends State<DashboardPage> {
   double promedio = 0;
   double maxima = 0;
   double minima = 0;
+  double mediana = 0;
+  dynamic moda = 0;
+  double pendiente = 0;
+  double probabilidadRealizacion = 0;
+  String tendencia = "";
 
   List temperaturas = [];
 
@@ -36,9 +41,16 @@ class _DashboardPageState extends State<DashboardPage> {
       final datos = jsonDecode(respuesta.body);
 
       setState(() {
-        promedio = (datos["promedio"] ?? 0).toDouble();
+         promedio = (datos["promedio"] ?? 0).toDouble();
         maxima = (datos["maxima"] ?? 0).toDouble();
         minima = (datos["minima"] ?? 0).toDouble();
+
+        mediana = (datos["mediana"] ?? 0).toDouble();
+        moda = datos["moda"];
+       pendiente = (datos["pendiente"] ?? 0).toDouble();
+      probabilidadRealizacion =
+         (datos["probabilidad_realizacion"] ?? 0).toDouble();
+      tendencia = datos["tendencia"] ?? "";
       });
     }
   }
@@ -77,6 +89,13 @@ class _DashboardPageState extends State<DashboardPage> {
               pw.Text("Temperatura promedio: $promedio °C"),
               pw.Text("Temperatura máxima: $maxima °C"),
               pw.Text("Temperatura mínima: $minima °C"),
+              pw.Text("Mediana: $mediana °C"),
+pw.Text("Moda: $moda °C"),
+pw.Text("Pendiente: $pendiente"),
+pw.Text("Tendencia: $tendencia"),
+pw.Text(
+  "Probabilidad de realización: $probabilidadRealizacion %",
+),
               pw.SizedBox(height: 20),
               pw.Text(
                 "Historial de temperaturas",
@@ -274,6 +293,45 @@ class _DashboardPageState extends State<DashboardPage> {
               Colors.blue,
               card,
             ),
+            tarjetaEstadistica(
+  "Mediana",
+  "$mediana °C",
+  Icons.analytics,
+  Colors.orange,
+  card,
+),
+
+tarjetaEstadistica(
+  "Moda",
+  "$moda °C",
+  Icons.auto_graph,
+  Colors.green,
+  card,
+),
+
+tarjetaEstadistica(
+  "Pendiente",
+  pendiente.toString(),
+  Icons.trending_up,
+  Colors.purple,
+  card,
+),
+
+tarjetaEstadistica(
+  "Tendencia",
+  tendencia,
+  Icons.thermostat,
+  Colors.red,
+  card,
+),
+
+tarjetaEstadistica(
+  "Probabilidad de Realización",
+  "$probabilidadRealizacion %",
+  Icons.check_circle,
+  Colors.teal,
+  card,
+),
             const SizedBox(height: 10),
             Container(
               width: double.infinity,
