@@ -559,7 +559,6 @@ def estadisticas(usuario_id):
         except:
             moda = "Sin moda"
 
-        # REGRESIÓN LINEAL
         n = len(temperaturas)
 
         x = list(range(1, n + 1))
@@ -587,7 +586,6 @@ def estadisticas(usuario_id):
         else:
             tendencia = "Estable"
 
-        # BAYES
         p_lluvia = 0.50
         p_alerta_dada_lluvia = 0.70
 
@@ -607,31 +605,6 @@ def estadisticas(usuario_id):
             "tendencia": tendencia,
             "probabilidad_realizacion": probabilidad_realizacion
         })
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-    try:
-        conexion = obtener_conexion()
-        cursor = conexion.cursor(dictionary=True)
-
-        cursor.execute(
-            """
-            SELECT
-            AVG(temperatura) AS promedio,
-            MAX(temperatura) AS maxima,
-            MIN(temperatura) AS minima
-            FROM temperaturas
-            WHERE usuario_id = %s
-            """,
-            (usuario_id,)
-        )
-
-        datos = cursor.fetchone()
-
-        cursor.close()
-        conexion.close()
-
-        return jsonify(datos), 200
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
