@@ -11,6 +11,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import date, time, timedelta, datetime
 import requests
+import statistics
 
 load_dotenv()
 
@@ -514,6 +515,101 @@ def guardar_temperatura():
 
 @app.route("/estadisticas/<int:usuario_id>", methods=["GET"])
 def estadisticas(usuario_id):
+    try:
+        conexion = obtener_conexion()
+        cursor = conexion.cursor()
+
+        cursor.execute(
+            """
+            SELECT temperatura
+            FROM temperaturas
+            WHERE usuario_id = %s
+            ORDER BY fecha ASC
+            """,
+            (usuario_id,)
+        )
+
+        registros = cursor.fetchall()
+
+        cursor.close()
+        conexion.close()
+
+        temperaturas = [float(t[0]) for t in registros]
+
+        if len(temperaturas) == 0:
+            return jsonify({
+                "promedio": 0,
+                "maxima": 0,
+                "minima": 0,
+                "mediana": 0,
+                "moda": 0,
+                "pendiente": 0,
+                "tendencia": "Sin datos",
+                "probabilidad_realizacion": 0
+            })
+
+        promedio = round(sum(temperaturas) / len(temperaturas), 2)
+        maxima = max(temperaturas)
+        minima = min(temperaturas)
+
+        mediana = round(statistics.median(temperaturas), 2)
+
+        try:
+            moda = round(statistics.mode(temperaturas), 2)
+        except:
+            moda = "Sin moda"
+
+        # REGRESIÓN LINEAL
+        n = len(temperaturas)
+
+        x = list(range(1, n + 1))
+        y = temperaturas
+
+        suma_x = sum(x)
+        suma_y = sum(y)
+
+        suma_xy = sum(xi * yi for xi, yi in zip(x, y))
+        suma_x2 = sum(xi ** 2 for xi in x)
+
+        denominador = (n * suma_x2) - (suma_x ** 2)
+
+        if denominador != 0:
+            m = ((n * suma_xy) - (suma_x * suma_y)) / denominador
+        else:
+            m = 0
+
+        m = round(m, 3)
+
+        if m > 0:
+            tendencia = "Calentamiento"
+        elif m < 0:
+            tendencia = "Enfriamiento"
+        else:
+            tendencia = "Estable"
+
+        # BAYES
+        p_lluvia = 0.50
+        p_alerta_dada_lluvia = 0.70
+
+        probabilidad_lluvia = p_lluvia * p_alerta_dada_lluvia
+        probabilidad_realizacion = round(
+            (1 - probabilidad_lluvia) * 100,
+            2
+        )
+
+        return jsonify({
+            "promedio": promedio,
+            "maxima": maxima,
+            "minima": minima,
+            "mediana": mediana,
+            "moda": moda,
+            "pendiente": m,
+            "tendencia": tendencia,
+            "probabilidad_realizacion": probabilidad_realizacion
+        })
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
     try:
         conexion = obtener_conexion()
         cursor = conexion.cursor(dictionary=True)

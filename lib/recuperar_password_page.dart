@@ -6,11 +6,14 @@ class RecuperarPasswordPage extends StatefulWidget {
   const RecuperarPasswordPage({super.key});
 
   @override
-  State<RecuperarPasswordPage> createState() => _RecuperarPasswordPageState();
+  State<RecuperarPasswordPage> createState() =>
+      _RecuperarPasswordPageState();
 }
 
-class _RecuperarPasswordPageState extends State<RecuperarPasswordPage> {
+class _RecuperarPasswordPageState
+    extends State<RecuperarPasswordPage> {
   final correoController = TextEditingController();
+
   String mensaje = "";
   bool cargando = false;
 
@@ -27,7 +30,9 @@ class _RecuperarPasswordPageState extends State<RecuperarPasswordPage> {
     try {
       final respuesta = await http.post(
         url,
-        headers: {"Content-Type": "application/json"},
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: jsonEncode({
           "correo": correoController.text.trim(),
         }),
@@ -44,7 +49,7 @@ class _RecuperarPasswordPageState extends State<RecuperarPasswordPage> {
       });
     } catch (e) {
       setState(() {
-        mensaje = "Error de conexión con el servidor";
+        mensaje = "Error de conexión";
       });
     } finally {
       setState(() {
@@ -55,34 +60,33 @@ class _RecuperarPasswordPageState extends State<RecuperarPasswordPage> {
 
   @override
   Widget build(BuildContext context) {
-    final esOscuro = Theme.of(context).brightness == Brightness.dark;
-    final fondo = esOscuro ? const Color(0xFF0F172A) : const Color(0xFFF4F6FB);
-    final card = esOscuro ? const Color(0xFF1E293B) : Colors.white;
+    final esOscuro =
+        Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: fondo,
       appBar: AppBar(
         title: const Text("Recuperar contraseña"),
-        centerTitle: true,
       ),
       body: Center(
         child: Container(
-          width: 430,
-          margin: const EdgeInsets.all(22),
-          padding: const EdgeInsets.all(26),
+          width: 420,
+          padding: const EdgeInsets.all(25),
+          margin: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: card,
-            borderRadius: BorderRadius.circular(28),
+            color: esOscuro
+                ? const Color(0xFF1E293B)
+                : Colors.white,
+            borderRadius: BorderRadius.circular(25),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               const Icon(
-                Icons.mark_email_read,
+                Icons.email,
                 size: 70,
                 color: Colors.blue,
               ),
-              const SizedBox(height: 18),
+              const SizedBox(height: 20),
               const Text(
                 "Recuperar contraseña",
                 style: TextStyle(
@@ -92,48 +96,50 @@ class _RecuperarPasswordPageState extends State<RecuperarPasswordPage> {
               ),
               const SizedBox(height: 10),
               const Text(
-                "Ingresa tu correo registrado y recibirás una contraseña temporal.",
+                "Ingresa tu correo registrado.",
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 25),
               TextField(
                 controller: correoController,
                 decoration: InputDecoration(
-                  labelText: "Correo registrado",
+                  labelText: "Correo",
                   prefixIcon: const Icon(Icons.email),
-                  filled: true,
-                  fillColor: esOscuro ? const Color(0xFF0F172A) : Colors.white,
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(18),
-                    borderSide: BorderSide.none,
+                    borderRadius:
+                        BorderRadius.circular(18),
                   ),
                 ),
               ),
-              const SizedBox(height: 22),
+              const SizedBox(height: 25),
               SizedBox(
                 width: double.infinity,
                 height: 52,
                 child: ElevatedButton.icon(
-                  onPressed: cargando ? null : recuperar,
+                  onPressed:
+                      cargando ? null : recuperar,
                   icon: cargando
                       ? const SizedBox(
                           width: 18,
                           height: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2),
+                          child:
+                              CircularProgressIndicator(
+                            strokeWidth: 2,
+                          ),
                         )
                       : const Icon(Icons.send),
                   label: Text(
-                    cargando ? "Enviando..." : "Enviar contraseña temporal",
+                    cargando
+                        ? "Enviando..."
+                        : "Enviar contraseña temporal",
                   ),
                 ),
               ),
-              if (mensaje.isNotEmpty) ...[
-                const SizedBox(height: 18),
-                Text(
-                  mensaje,
-                  textAlign: TextAlign.center,
-                ),
-              ],
+              const SizedBox(height: 20),
+              Text(
+                mensaje,
+                textAlign: TextAlign.center,
+              ),
             ],
           ),
         ),

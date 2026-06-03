@@ -11,80 +11,112 @@ class CambiarPasswordPage extends StatefulWidget {
   });
 
   @override
-  State<CambiarPasswordPage> createState() => _CambiarPasswordPageState();
+  State<CambiarPasswordPage> createState() =>
+      _CambiarPasswordPageState();
 }
 
-class _CambiarPasswordPageState extends State<CambiarPasswordPage> {
+class _CambiarPasswordPageState
+    extends State<CambiarPasswordPage> {
   final nuevaController = TextEditingController();
   final confirmarController = TextEditingController();
 
   String mensaje = "";
-  bool ocultarNueva = true;
-  bool ocultarConfirmar = true;
+  bool cargando = false;
 
   Future<void> cambiarPassword() async {
+    setState(() {
+      cargando = true;
+      mensaje = "";
+    });
+
     final url = Uri.parse(
       "https://clima-planificador.onrender.com/cambiar-password/${widget.usuarioId}",
     );
 
-    final respuesta = await http.put(
-      url,
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode({
-        "nueva": nuevaController.text,
-        "confirmar": confirmarController.text,
-      }),
-    );
+    try {
+      final respuesta = await http.put(
+        url,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: jsonEncode({
+          "nueva": nuevaController.text,
+          "confirmar": confirmarController.text,
+        }),
+      );
 
-    final datos = jsonDecode(respuesta.body);
+      final datos = jsonDecode(respuesta.body);
 
-    if (respuesta.statusCode == 200) {
-      Navigator.pop(context);
-    } else {
+      if (respuesta.statusCode == 200) {
+        setState(() {
+          mensaje =
+              "Contraseña cambiada correctamente";
+        });
+
+        await Future.delayed(
+          const Duration(seconds: 2),
+        );
+
+        if (mounted) {
+          Navigator.pushNamedAndRemoveUntil(
+             context,
+             "/",
+             (route) => false,
+          );
+        }
+      } else {
+        setState(() {
+          mensaje = datos["error"];
+        });
+      }
+    } catch (e) {
       setState(() {
-        mensaje = datos["error"];
+        mensaje = "Error de conexión";
       });
+    } finally {
+      if (mounted) {
+        setState(() {
+          cargando = false;
+        });
+      }
     }
-  }
-
-  InputDecoration inputDecoracion(String texto, IconData icono) {
-    return InputDecoration(
-      labelText: texto,
-      prefixIcon: Icon(icono),
-      filled: true,
-      fillColor: Colors.white,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(18),
-        borderSide: BorderSide.none,
-      ),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final esOscuro =
+        Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F6FB),
       appBar: AppBar(
         title: const Text("Cambiar contraseña"),
-        centerTitle: true,
       ),
       body: Center(
         child: Container(
-          width: 430,
+          width: 420,
+          padding: const EdgeInsets.all(25),
           margin: const EdgeInsets.all(20),
-          padding: const EdgeInsets.all(28),
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(28),
+            color: esOscuro
+                ? const Color(0xFF1E293B)
+                : Colors.white,
+            borderRadius: BorderRadius.circular(25),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.lock_reset, size: 70, color: Colors.blue),
+              const Icon(
+                Icons.lock_reset,
+                size: 70,
+                color: Colors.blue,
+              ),
               const SizedBox(height: 20),
               const Text(
-                "Cambio obligatorio",
-                style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+                "Cambiar contraseña",
+                style: TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 10),
               const Text(
@@ -94,39 +126,29 @@ class _CambiarPasswordPageState extends State<CambiarPasswordPage> {
               const SizedBox(height: 25),
               TextField(
                 controller: nuevaController,
-                obscureText: ocultarNueva,
-                decoration: inputDecoracion("Nueva contraseña", Icons.lock)
-                    .copyWith(
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      ocultarNueva ? Icons.visibility : Icons.visibility_off,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        ocultarNueva = !ocultarNueva;
-                      });
-                    },
+                obscureText: true,
+                decoration: InputDecoration(
+                  labelText: "Nueva contraseña",
+                  prefixIcon:
+                      const Icon(Icons.lock),
+                  border: OutlineInputBorder(
+                    borderRadius:
+                        BorderRadius.circular(18),
                   ),
                 ),
               ),
-              const SizedBox(height: 18),
+              const SizedBox(height: 20),
               TextField(
                 controller: confirmarController,
-                obscureText: ocultarConfirmar,
-                decoration:
-                    inputDecoracion("Confirmar contraseña", Icons.lock_outline)
-                        .copyWith(
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      ocultarConfirmar
-                          ? Icons.visibility
-                          : Icons.visibility_off,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        ocultarConfirmar = !ocultarConfirmar;
-                      });
-                    },
+                obscureText: true,
+                decoration: InputDecoration(
+                  labelText:
+                      "Confirmar contraseña",
+                  prefixIcon:
+                      const Icon(Icons.lock_outline),
+                  border: OutlineInputBorder(
+                    borderRadius:
+                        BorderRadius.circular(18),
                   ),
                 ),
               ),
@@ -134,19 +156,31 @@ class _CambiarPasswordPageState extends State<CambiarPasswordPage> {
               SizedBox(
                 width: double.infinity,
                 height: 52,
-                child: ElevatedButton(
-                  onPressed: cambiarPassword,
-                  child: const Text("Cambiar contraseña"),
+                child: ElevatedButton.icon(
+                  onPressed:
+                      cargando ? null : cambiarPassword,
+                  icon: cargando
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child:
+                              CircularProgressIndicator(
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Icon(Icons.save),
+                  label: Text(
+                    cargando
+                        ? "Guardando..."
+                        : "Cambiar contraseña",
+                  ),
                 ),
               ),
-              if (mensaje.isNotEmpty) ...[
-                const SizedBox(height: 15),
-                Text(
-                  mensaje,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.red),
-                ),
-              ],
+              const SizedBox(height: 20),
+              Text(
+                mensaje,
+                textAlign: TextAlign.center,
+              ),
             ],
           ),
         ),
