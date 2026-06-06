@@ -338,7 +338,7 @@ class HomePage extends StatefulWidget {
   });
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<HomePage> createState() => _HomePageState();  
 }
 
 class _HomePageState extends State<HomePage> {
@@ -350,6 +350,46 @@ class _HomePageState extends State<HomePage> {
 
   double? latitud;
   double? longitud;
+
+  @override
+void initState() {
+  super.initState();
+
+  Future.delayed(
+    const Duration(seconds: 3),
+    () {
+      verificarActividadesConLluvia();
+    },
+  );
+}
+
+  Future<void> verificarActividadesConLluvia() async {
+  try {
+    final url = Uri.parse(
+      "https://clima-planificador.onrender.com/actividades/${widget.usuarioId}",
+    );
+
+    final respuesta = await http.get(url);
+
+    if (respuesta.statusCode != 200) return;
+
+    final actividades = jsonDecode(respuesta.body);
+
+    for (var actividad in actividades) {
+      if (actividad["estado"] == "Completada") continue;
+
+      await NotificacionService.mostrarNotificacion(
+        titulo: "🌧 Advertencia Climática",
+        mensaje:
+            "La actividad '${actividad["titulo"]}' podría verse afectada por lluvia.",
+      );
+
+      break;
+    }
+  } catch (e) {
+    print(e);
+  }
+}
 
   Future<void> obtenerUbicacion() async {
     bool servicioActivo = await Geolocator.isLocationServiceEnabled();

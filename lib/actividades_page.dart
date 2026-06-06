@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 
 class ActividadesPage extends StatefulWidget {
   final int usuarioId;
@@ -12,6 +13,7 @@ class ActividadesPage extends StatefulWidget {
 
   @override
   State<ActividadesPage> createState() => _ActividadesPageState();
+
 }
 
 class _ActividadesPageState extends State<ActividadesPage> {
@@ -19,6 +21,75 @@ class _ActividadesPageState extends State<ActividadesPage> {
   final descripcionController = TextEditingController();
   final fechaController = TextEditingController();
   final horaController = TextEditingController();
+    Future<void> verificarClimaAntesDeGuardar() async {
+  try {
+    final fechaActividad = DateTime.parse(
+      fechaController.text,
+    );
+
+    final hoy = DateTime.now();
+
+    final diferencia =
+        fechaActividad.difference(hoy).inDays;
+
+    if (diferencia < 0 || diferencia > 7) {
+      guardarActividad();
+      return;
+    }
+
+    final url = Uri.parse(
+      "https://api.open-meteo.com/v1/forecast?latitude=14.8347&longitude=-91.5180&daily=weathercode&timezone=auto",
+    );
+
+    final respuesta = await http.get(url);
+
+    if (respuesta.statusCode == 200) {
+      final datos = jsonDecode(respuesta.body);
+
+      final codigos =
+          datos["daily"]["weathercode"];
+
+      int codigo = codigos[diferencia];
+
+      if (codigo >= 61 && codigo <= 67) {
+        if (!mounted) return;
+
+        showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: const Text(
+              "⚠ Advertencia Climática",
+            ),
+            content: Text(
+              "Se pronostica lluvia para '${tituloController.text}'.\n\n¿Desea continuar?",
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text("Cancelar"),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  guardarActividad();
+                },
+                child: const Text("Guardar"),
+              ),
+            ],
+          ),
+        );
+      } else {
+        guardarActividad();
+      }
+    } else {
+      guardarActividad();
+    }
+  } catch (e) {
+    guardarActividad();
+  }
+}
 
   String tipo = "Aire libre";
   String mensaje = "";
@@ -283,8 +354,8 @@ class _ActividadesPageState extends State<ActividadesPage> {
                     height: 52,
                     child: ElevatedButton.icon(
                       onPressed: actividadEditando == null
-                          ? guardarActividad
-                          : editarActividad,
+    ? verificarClimaAntesDeGuardar
+    : editarActividad,
                       icon: Icon(
                         actividadEditando == null ? Icons.save : Icons.edit,
                       ),
