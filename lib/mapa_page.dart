@@ -36,7 +36,27 @@ class _MapaPageState extends State<MapaPage> {
   Future<void> guardarUbicacion() async {
     if (puntoSeleccionado == null) return;
 
-    final nombreController = TextEditingController();
+    final respuestaNombre = await http.get(
+  Uri.parse(
+    "https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${puntoSeleccionado!.latitude}&lon=${puntoSeleccionado!.longitude}",
+  ),
+  headers: {
+    "User-Agent": "clima_planificador",
+  },
+);
+
+String nombreAutomatico = "Ubicación";
+
+if (respuestaNombre.statusCode == 200) {
+  final datosNombre = jsonDecode(respuestaNombre.body);
+
+  nombreAutomatico =
+      datosNombre["display_name"] ?? "Ubicación";
+}
+
+    final nombreController = TextEditingController(
+  text: nombreAutomatico,
+);
     final descripcionController = TextEditingController();
 
     bool? confirmar = await showDialog<bool>(

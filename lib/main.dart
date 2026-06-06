@@ -420,8 +420,8 @@ void initState() {
     longitud = posicion.longitude;
 
     setState(() {
-      ubicacion = "Latitud: $latitud\nLongitud: $longitud";
-    });
+  ubicacion = "📍 Ubicación detectada correctamente";
+});
   }
 
   Future<void> guardarUbicacion() async {
@@ -490,14 +490,29 @@ void initState() {
         double temp = datos["current_weather"]["temperature"];
         double viento = datos["current_weather"]["windspeed"];
         int codigoClima = datos["current_weather"]["weathercode"];
+        print("CODIGO CLIMA: $codigoClima");
 
-        temperatura = "$temp °C";
-        clima = "Viento: $viento km/h";
+       temperatura = "$temp °C";
+clima = "Viento: $viento km/h";
 
-        if (codigoClima >= 61 && codigoClima <= 67) {
-          recomendacion = "🌧️ Lluvia detectada.\nLleva paraguas.";
-          climaEstado = "lluvia";
-        } else if (temp <= 8) {
+if ([51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82, 95, 96, 99]
+    .contains(codigoClima)) {
+
+  recomendacion =
+      "🌧️ Se detecta lluvia o tormenta.\nLleva paraguas y toma precauciones.";
+
+  climaEstado = "lluvia";
+
+} else if ([1, 2, 3, 45, 48].contains(codigoClima)) {
+
+  recomendacion =
+      "☁️ Cielo nublado.\nConsulta el pronóstico antes de salir.";
+
+  climaEstado = "nublado";
+
+} else if (temp <= 8) {
+
+         
           recomendacion =
               "🥶 Mucho frío.\nIdeal para actividades interiores.";
           climaEstado = "frio";
@@ -653,6 +668,9 @@ void initState() {
     if (climaEstado == "viento") {
       return Icons.air;
     }
+    if (climaEstado == "nublado") {
+  return Icons.cloud;
+}
 
     return Icons.cloud_queue;
   }
@@ -861,16 +879,16 @@ void initState() {
               obtenerUbicacion,
             ),
             cardAccion(
-              Icons.save,
-              "Guardar ubicación",
-              "Guarda tus coordenadas actuales en MySQL",
-              guardarUbicacion,
-            ),
+  Icons.save,
+  "Guardar ubicación",
+  "Guarda lugares importantes para consultarlos después",
+  guardarUbicacion,
+),
             cardAccion(
               Icons.cloud_queue,
-              "Obtener clima",
-              "Consulta temperatura y viento en tiempo real",
-              obtenerClima,
+             "Obtener clima",
+  "Consulta el estado climático actual de tu ubicación",
+  obtenerClima,
             ),
             const SizedBox(height: 20),
             if (temperatura.isNotEmpty || clima.isNotEmpty)
