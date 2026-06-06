@@ -21,10 +21,12 @@ class _PronosticoPageState extends State<PronosticoPage> {
   List maximas = [];
   List minimas = [];
 
+
+  List weatherCodes = [];
   Future<void> cargarPronostico() async {
-    final url = Uri.parse(
-      "https://api.open-meteo.com/v1/forecast?latitude=${widget.latitud}&longitude=${widget.longitud}&daily=temperature_2m_max,temperature_2m_min&timezone=auto",
-    );
+   final url = Uri.parse(
+  "https://api.open-meteo.com/v1/forecast?latitude=${widget.latitud}&longitude=${widget.longitud}&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=auto",
+);
 
     final respuesta = await http.get(url);
 
@@ -32,22 +34,37 @@ class _PronosticoPageState extends State<PronosticoPage> {
       final datos = jsonDecode(respuesta.body);
 
       setState(() {
-        fechas = datos["daily"]["time"];
-        maximas = datos["daily"]["temperature_2m_max"];
-        minimas = datos["daily"]["temperature_2m_min"];
-      });
+       fechas = datos["daily"]["time"];
+       maximas = datos["daily"]["temperature_2m_max"];
+       minimas = datos["daily"]["temperature_2m_min"];
+        weatherCodes = datos["daily"]["weathercode"];
+    });
     }
   }
 
-  String recomendacion(double max, double min) {
-    if (min <= 10) {
-      return "Día frío, llevar abrigo";
-    } else if (max >= 25) {
-      return "Día caluroso, hidratarse bien";
-    } else {
-      return "Buen clima para actividades";
-    }
+  String recomendacion(double max, double min, String clima) {
+  if (clima == "Tormenta") {
+    return "Evitar actividades al aire libre";
   }
+
+  if (clima == "Lluvia") {
+    return "Llevar paraguas o impermeable";
+  }
+
+  if (clima == "Nublado") {
+    return "Clima estable con poca radiación solar";
+  }
+
+  if (min <= 10) {
+    return "Día frío, llevar abrigo";
+  }
+
+  if (max >= 25) {
+    return "Día caluroso, hidratarse bien";
+  }
+
+  return "Buen clima para actividades";
+}
 
   Color colorClima(double max, double min) {
     if (min <= 10) {
@@ -68,6 +85,22 @@ class _PronosticoPageState extends State<PronosticoPage> {
       return Icons.cloud_queue;
     }
   }
+
+  String estadoClima(int codigo) {
+  if (codigo == 0) {
+    return "Despejado";
+  } else if (codigo >= 1 && codigo <= 3) {
+    return "Nublado";
+  } else if (codigo >= 51 && codigo <= 67) {
+    return "Lluvia";
+  } else if (codigo >= 71 && codigo <= 77) {
+    return "Nieve";
+  } else if (codigo >= 80 && codigo <= 99) {
+    return "Tormenta";
+  } else {
+    return "Variable";
+  }
+}
 
   @override
   void initState() {
@@ -170,6 +203,10 @@ class _PronosticoPageState extends State<PronosticoPage> {
                       final min = minimas[index].toDouble();
                       final color = colorClima(max, min);
 
+                      final clima = weatherCodes.isNotEmpty
+                      ? estadoClima(int.parse(weatherCodes[index].toString()))
+                      : "Sin datos";
+
                       return Container(
                         margin: const EdgeInsets.only(bottom: 16),
                         padding: const EdgeInsets.all(20),
@@ -230,7 +267,19 @@ class _PronosticoPageState extends State<PronosticoPage> {
                                         label: Text("Mín: $min °C"),
                                       ),
                                     ],
-                                  ),
+                                  ), 
+                                  
+                                  const SizedBox(height: 10),
+
+                                     Text(
+                                              "Estado: $clima",
+                                             style: const TextStyle(
+                                             fontSize: 16,
+                                               fontWeight: FontWeight.bold,
+                                                   ),
+                                           ),
+ 
+
                                   const SizedBox(height: 14),
                                   Container(
                                     width: double.infinity,
@@ -240,7 +289,7 @@ class _PronosticoPageState extends State<PronosticoPage> {
                                       borderRadius: BorderRadius.circular(18),
                                     ),
                                     child: Text(
-                                      recomendacion(max, min),
+                                      recomendacion(max, min,clima),
                                       style: TextStyle(
                                         color: color,
                                         fontWeight: FontWeight.bold,

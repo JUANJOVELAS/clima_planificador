@@ -674,29 +674,38 @@ class _HomePageState extends State<HomePage> {
                 ),
               );
             }),
-            menuItem(Icons.location_on, "Ubicaciones", () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => UbicacionesPage(
-                    usuarioId: widget.usuarioId,
-                  ),
-                ),
-              );
-            }),
+
+            menuItem(Icons.location_on, "Ubicaciones Guardadas", () {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => UbicacionesPage(
+        usuarioId: widget.usuarioId,
+      ),
+    ),
+  );
+}),
+
             menuItem(Icons.map, "Mapa Real", () {
-              if (latitud != null && longitud != null) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => MapaPage(
-                      latitud: latitud!,
-                      longitud: longitud!,
-                    ),
-                  ),
-                );
-              }
-            }),
+  if (latitud != null && longitud != null) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MapaPage(
+          usuarioId: widget.usuarioId,
+          latitud: latitud!,
+          longitud: longitud!,
+        ),
+      ),
+    );
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Primero obtené la ubicación"),
+      ),
+    );
+  }
+}),
             menuItem(Icons.event, "Actividades", () {
               Navigator.push(
                 context,

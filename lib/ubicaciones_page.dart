@@ -16,6 +16,34 @@ class UbicacionesPage extends StatefulWidget {
 
 class _UbicacionesPageState extends State<UbicacionesPage> {
   List ubicaciones = [];
+    String filtroActual = "Recientes";
+
+  Future<Map<String, dynamic>> obtenerClima(
+  double latitud,
+  double longitud,
+) async {
+  final url = Uri.parse(
+    "https://api.open-meteo.com/v1/forecast?latitude=$latitud&longitude=$longitud&current_weather=true",
+  );
+
+  final respuesta = await http.get(url);
+
+  if (respuesta.statusCode == 200) {
+    final datos = jsonDecode(respuesta.body);
+
+    return {
+      "temperatura":
+          datos["current_weather"]["temperature"].toString(),
+      "viento":
+          datos["current_weather"]["windspeed"].toString(),
+    };
+  }
+
+  return {
+    "temperatura": "--",
+    "viento": "--",
+  };
+}
 
   Future<void> cargarUbicaciones() async {
     final url = Uri.parse(
@@ -30,6 +58,40 @@ class _UbicacionesPageState extends State<UbicacionesPage> {
       });
     }
   }
+
+  void ordenarRecientes() {
+  setState(() {
+    ubicaciones.sort(
+      (a, b) => b["id"].compareTo(a["id"]),
+    );
+    filtroActual = "Recientes";
+  });
+}
+
+void ordenarAntiguas() {
+  setState(() {
+    ubicaciones.sort(
+      (a, b) => a["id"].compareTo(b["id"]),
+    );
+    filtroActual = "Antiguas";
+  });
+}
+
+void ordenarNombre() {
+  setState(() {
+    ubicaciones.sort(
+      (a, b) => a["nombre"]
+          .toString()
+          .toLowerCase()
+          .compareTo(
+            b["nombre"]
+                .toString()
+                .toLowerCase(),
+          ),
+    );
+    filtroActual = "Nombre";
+  });
+}
 
   @override
   void initState() {
@@ -97,6 +159,38 @@ class _UbicacionesPageState extends State<UbicacionesPage> {
               ),
             ),
             const SizedBox(height: 24),
+            Row(
+  children: [
+    Expanded(
+      child: ElevatedButton.icon(
+        onPressed: ordenarRecientes,
+        icon: const Icon(Icons.new_releases),
+        label: const Text("Recientes"),
+      ),
+    ),
+    const SizedBox(width: 10),
+    Expanded(
+      child: ElevatedButton.icon(
+        onPressed: ordenarAntiguas,
+        icon: const Icon(Icons.history),
+        label: const Text("Antiguas"),
+      ),
+    ),
+  ],
+),
+
+const SizedBox(height: 10),
+
+SizedBox(
+  width: double.infinity,
+  child: ElevatedButton.icon(
+    onPressed: ordenarNombre,
+    icon: const Icon(Icons.sort_by_alpha),
+    label: const Text("Nombre"),
+  ),
+),
+
+const SizedBox(height: 20),
             ubicaciones.isEmpty
                 ? Container(
                     width: double.infinity,
@@ -112,6 +206,7 @@ class _UbicacionesPageState extends State<UbicacionesPage> {
                         ),
                       ],
                     ),
+                    
                     child: const Column(
                       children: [
                         Icon(
@@ -171,48 +266,85 @@ class _UbicacionesPageState extends State<UbicacionesPage> {
                             ),
                             const SizedBox(width: 18),
                             Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    ubicacion["nombre"],
-                                    style: const TextStyle(
-                                      fontSize: 19,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    ubicacion["descripcion"] ?? "",
-                                  ),
-                                  const SizedBox(height: 14),
-                                  Wrap(
-                                    spacing: 8,
-                                    runSpacing: 8,
-                                    children: [
-                                      Chip(
-                                        avatar: const Icon(
-                                          Icons.my_location,
-                                          size: 18,
-                                        ),
-                                        label: Text(
-                                          "Lat: ${ubicacion["latitud"]}",
-                                        ),
-                                      ),
-                                      Chip(
-                                        avatar: const Icon(
-                                          Icons.explore,
-                                          size: 18,
-                                        ),
-                                        label: Text(
-                                          "Lng: ${ubicacion["longitud"]}",
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
+  child: FutureBuilder<Map<String, dynamic>>(
+    future: obtenerClima(
+      double.parse(ubicacion["latitud"].toString()),
+      double.parse(ubicacion["longitud"].toString()),
+    ),
+    builder: (context, snapshot) {
+      String temperatura = "...";
+      String viento = "...";
+
+      if (snapshot.hasData) {
+        temperatura = snapshot.data!["temperatura"];
+        viento = snapshot.data!["viento"];
+      }
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            ubicacion["nombre"],
+            style: const TextStyle(
+              fontSize: 19,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+
+          Text(
+            ubicacion["descripcion"] ?? "",
+          ),
+
+          const SizedBox(height: 10),
+
+          Text(
+            "🌡️ Temperatura: $temperatura °C",
+            style: const TextStyle(
+              color: Colors.orange,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+
+          Text(
+            "💨 Viento: $viento km/h",
+            style: const TextStyle(
+              color: Colors.blue,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+
+          const SizedBox(height: 14),
+
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              Chip(
+                avatar: const Icon(
+                  Icons.my_location,
+                  size: 18,
+                ),
+                label: Text(
+                  "Lat: ${ubicacion["latitud"]}",
+                ),
+              ),
+              Chip(
+                avatar: const Icon(
+                  Icons.explore,
+                  size: 18,
+                ),
+                label: Text(
+                  "Lng: ${ubicacion["longitud"]}",
+                ),
+              ),
+            ],
+          ),
+        ],
+      );
+    },
+  ),
+),
                           ],
                         ),
                       );
