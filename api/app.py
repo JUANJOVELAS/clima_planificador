@@ -375,7 +375,7 @@ def crear_actividad():
 
     try:
         conexion = obtener_conexion()
-        cursor = conexion.cursor()
+        cursor = conexion.cursor(buffered=True)
 
         cursor.execute(
             """
@@ -384,8 +384,7 @@ def crear_actividad():
             WHERE usuario_id = %s
             AND fecha = %s
             AND hora = %s
-            """
-            ,
+            """,
             (usuario_id, fecha, hora)
         )
 
@@ -426,11 +425,11 @@ def crear_actividad():
         }), 201
 
     except Exception as e:
-          print("ERROR CREAR ACTIVIDAD:", str(e))
+        print("ERROR CREAR ACTIVIDAD:", str(e))
 
-          return jsonify({
-          "error": str(e)
-         }), 500
+        return jsonify({
+            "error": str(e)
+        }), 500
     
 
 
