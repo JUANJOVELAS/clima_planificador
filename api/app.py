@@ -425,7 +425,7 @@ def crear_actividad():
             "mensaje": "Actividad creada correctamente"
         }), 201
 
-         except Exception as e:
+    except Exception as e:
           print("ERROR CREAR ACTIVIDAD:", str(e))
 
           return jsonify({
