@@ -51,7 +51,10 @@ if (respuestaNombre.statusCode == 200) {
   final datosNombre = jsonDecode(respuestaNombre.body);
 
   nombreAutomatico =
-      datosNombre["display_name"] ?? "Ubicación";
+      (datosNombre["display_name"] ?? "Ubicación")
+          .toString()
+          .split(',')
+          .first;
 }
 
     final nombreController = TextEditingController(

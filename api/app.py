@@ -335,6 +335,29 @@ def listar_ubicaciones(usuario_id):
         return jsonify({"error": str(e)}), 500
 
 
+
+@app.route("/ubicaciones/<int:id>", methods=["DELETE"])
+def eliminar_ubicacion(id):
+    try:
+        conexion = obtener_conexion()
+        cursor = conexion.cursor()
+
+        cursor.execute(
+            "DELETE FROM ubicaciones WHERE id = %s",
+            (id,)
+        )
+
+        conexion.commit()
+
+        cursor.close()
+        conexion.close()
+
+        return jsonify({"mensaje": "Ubicación eliminada"}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route("/actividades", methods=["POST"])
 def crear_actividad():
     datos = request.get_json()

@@ -58,6 +58,15 @@ class _UbicacionesPageState extends State<UbicacionesPage> {
       });
     }
   }
+  Future<void> eliminarUbicacion(int id) async {
+  final url = Uri.parse(
+    "https://clima-planificador.onrender.com/ubicaciones/$id",
+  );
+
+  await http.delete(url);
+
+  cargarUbicaciones();
+}
 
   void ordenarRecientes() {
   setState(() {
@@ -344,6 +353,17 @@ const SizedBox(height: 20),
       );
     },
   ),
+),
+IconButton(
+  icon: const Icon(
+    Icons.delete,
+    color: Colors.red,
+  ),
+  onPressed: () {
+    eliminarUbicacion(
+      ubicacion["id"],
+    );
+  },
 ),
                           ],
                         ),
