@@ -377,53 +377,60 @@ def crear_actividad():
         conexion = obtener_conexion()
         cursor = conexion.cursor()
 
-       cursor.execute("""
-    SELECT id
-    FROM actividades
-    WHERE usuario_id = %s
-    AND fecha = %s
-    AND hora = %s
-    AND estado != 'Completada'
-""", (
-    usuario_id,
-    fecha,
-    hora
-))
+        cursor.execute(
+            """
+            SELECT id
+            FROM actividades
+            WHERE usuario_id = %s
+            AND fecha = %s
+            AND hora = %s
+            """
+            ,
+            (usuario_id, fecha, hora)
+        )
 
-actividad_existente = cursor.fetchone()
+        actividad_existente = cursor.fetchone()
 
-if actividad_existente:
-    cursor.close()
-    conexion.close()
+        if actividad_existente:
+            cursor.close()
+            conexion.close()
 
-    return jsonify({
-        "error": "Ya existe una actividad programada en esa fecha y hora"
-    }), 400
+            return jsonify({
+                "error": "Ya existe una actividad programada en esa fecha y hora"
+            }), 400
 
-cursor.execute(
-    """
-    INSERT INTO actividades
-    (usuario_id, ubicacion_id, titulo, descripcion, fecha, hora, tipo)
-    VALUES (%s, %s, %s, %s, %s, %s, %s)
-    """,
-    (
-        usuario_id,
-        ubicacion_id,
-        titulo,
-        descripcion,
-        fecha,
-        hora,
-        tipo
-    )
-)
+        cursor.execute(
+            """
+            INSERT INTO actividades
+            (usuario_id, ubicacion_id, titulo, descripcion, fecha, hora, tipo)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            """,
+            (
+                usuario_id,
+                ubicacion_id,
+                titulo,
+                descripcion,
+                fecha,
+                hora,
+                tipo
+            )
+        )
 
-conexion.commit()
-cursor.close()
-conexion.close()
+        conexion.commit()
 
-return jsonify({
-    "mensaje": "Actividad creada correctamente"
-}), 201
+        cursor.close()
+        conexion.close()
+
+        return jsonify({
+            "mensaje": "Actividad creada correctamente"
+        }), 201
+
+    except Exception as e:
+        return jsonify({
+            "error": str(e)
+        }), 500
+
+    
 
 
 @app.route("/actividades/<int:usuario_id>", methods=["GET"])
