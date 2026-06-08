@@ -377,23 +377,53 @@ def crear_actividad():
         conexion = obtener_conexion()
         cursor = conexion.cursor()
 
-        cursor.execute(
-            """
-            INSERT INTO actividades
-            (usuario_id, ubicacion_id, titulo, descripcion, fecha, hora, tipo)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
-            """,
-            (usuario_id, ubicacion_id, titulo, descripcion, fecha, hora, tipo)
-        )
+       cursor.execute("""
+    SELECT id
+    FROM actividades
+    WHERE usuario_id = %s
+    AND fecha = %s
+    AND hora = %s
+    AND estado != 'Completada'
+""", (
+    usuario_id,
+    fecha,
+    hora
+))
 
-        conexion.commit()
-        cursor.close()
-        conexion.close()
+actividad_existente = cursor.fetchone()
 
-        return jsonify({"mensaje": "Actividad creada correctamente"}), 201
+if actividad_existente:
+    cursor.close()
+    conexion.close()
 
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    return jsonify({
+        "error": "Ya existe una actividad programada en esa fecha y hora"
+    }), 400
+
+cursor.execute(
+    """
+    INSERT INTO actividades
+    (usuario_id, ubicacion_id, titulo, descripcion, fecha, hora, tipo)
+    VALUES (%s, %s, %s, %s, %s, %s, %s)
+    """,
+    (
+        usuario_id,
+        ubicacion_id,
+        titulo,
+        descripcion,
+        fecha,
+        hora,
+        tipo
+    )
+)
+
+conexion.commit()
+cursor.close()
+conexion.close()
+
+return jsonify({
+    "mensaje": "Actividad creada correctamente"
+}), 201
 
 
 @app.route("/actividades/<int:usuario_id>", methods=["GET"])
