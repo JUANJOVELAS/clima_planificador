@@ -426,9 +426,11 @@ def crear_actividad():
         }), 201
 
     except Exception as e:
-        return jsonify({
-            "error": str(e)
-        }), 500
+    print("ERROR CREAR ACTIVIDAD:", str(e))
+
+    return jsonify({
+        "error": str(e)
+    }), 500
 
     
 
